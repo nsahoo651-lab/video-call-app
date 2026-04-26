@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Video Call</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { text-align: center; background: #121212; color: white; font-family: sans-serif; }
+        .video-grid { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px; }
+        video { width: 90%; max-width: 350px; border: 2px solid #00d2ff; border-radius: 10px; background: black; }
+        .btn { padding: 15px 30px; background: #00d2ff; border: none; border-radius: 50px; font-weight: bold; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Live Video Call</h2>
+    <div class="video-grid">
+        <video id="localVideo" autoplay playsinline muted></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+    <button class="btn" onclick="startCall()">Call Start Karein</button>
+
+    <script>
+        const socket = io();
+        let localStream;
+        let peerConnection;
+        const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        async function startCall() {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+
+            peerConnection = new RTCPeerConnection(config);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.onicecandidate = e => {
+                if (e.candidate) socket.emit('signal', { ice: e.candidate });
+            };
+
+            peerConnection.ontrack = e => {
+                document.getElementById('remoteVideo').srcObject = e.streams[0];
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('signal', { offer: offer });
+        }
+
+        socket.on('signal', async (data) => {
+            if (data.offer) {
+                if (!peerConnection) await startCall();
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('signal', { answer: answer });
+            } else if (data.answer) {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            } else if (data.ice) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.ice));
+            }
+        });
+    </script>
+</body>
+</html>
