@@ -3,66 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Naresh All-in-One Meet</title>
+    <title>Naresh Pro Group Meet</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
+        body { background: #000; font-family: sans-serif; overflow: hidden; height: 100vh; }
         
-        /* 6-Person Video Grid */
-        #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(30%, 1fr)); gap: 8px; padding: 10px; height: 100vh; width: 100vw; background:#111; }
-        video { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 1px solid #333; }
+        /* SQUARE SIDE-BY-SIDE GRID */
+        #video-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 10px; padding: 10px; height: 100vh; width: 100vw; 
+            align-content: start;
+        }
 
-        /* Slide-up Chat Panel (Facebook Style) */
-        #chat-panel { position: fixed; bottom: -420px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 400px; height: 400px; background: white; border-radius: 20px 20px 0 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 500; display: flex; flex-direction: column; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-        #chat-panel.active { bottom: 0; }
-        .chat-header { background: #0084ff; color: white; padding: 15px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; }
-        #chat-msgs { flex: 1; padding: 15px; overflow-y: auto; color: #333; font-size: 14px; }
+        .v-box {
+            position: relative; width: 100%; padding-top: 100%; /* Square Shape */
+            background: #1a1a1a; border-radius: 15px; overflow: hidden; border: 2px solid #333;
+        }
 
-        /* Movable Board & Media Box */
-        #whiteboard-container, #media-box { position: absolute; top: 60px; left: 10px; width: 320px; height: 280px; background: white; border-radius: 15px; display: none; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.6); touch-action: none; border: 3px solid #3b82f6; }
-        .handle { background: #3b82f6; height: 35px; border-radius: 12px 12px 0 0; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; cursor: move; font-size: 13px; }
-        canvas { width: 100%; height: calc(100% - 35px); background: white; border-radius: 0 0 12px 12px; }
+        video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
-        /* Control Bar */
-        .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: rgba(0,0,0,0.7); padding: 15px 30px; border-radius: 60px; backdrop-filter: blur(15px); z-index: 100; border: 1px solid rgba(255,255,255,0.2); }
-        .btn { border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; font-size: 24px; color: white; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-call { background: #22c55e; }
-        .btn-chat { background: #0084ff; }
-        .btn-board { background: #f59e0b; }
-        .btn-clip { background: #6b7280; }
-        .btn-end { background: #ef4444; }
-        .btn:active { transform: scale(0.9); }
+        .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: rgba(0,0,0,0.7); padding: 15px 25px; border-radius: 50px; backdrop-filter: blur(10px); z-index: 1000; }
+        .btn { border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; font-size: 22px; color: white; display: flex; align-items: center; justify-content: center; }
+        .btn-call { background: #22c55e; } .btn-end { background: #ef4444; }
     </style>
 </head>
 <body>
 
-<div id="video-grid"><video id="localVideo" autoplay muted playsinline></video></div>
-
-<div id="chat-panel">
-    <div class="chat-header" onclick="toggleChat()"><span>💬 Group Chat</span><span>▼</span></div>
-    <div id="chat-msgs"></div>
-    <div style="padding:12px; border-top:1px solid #eee; display:flex; gap:8px;">
-        <input type="text" id="chatInput" placeholder="Message..." style="flex:1; padding:10px; border-radius:25px; border:1px solid #ddd; outline:none;">
-        <button onclick="sendMsg()" style="border:none; background:none; font-size:24px;">🚀</button>
-    </div>
-</div>
-
-<div id="whiteboard-container">
-    <div class="handle" id="boardHandle"><span>✏️ BOARD (Drag)</span><span onclick="toggleBoard()" style="cursor:pointer; font-size:20px;">×</span></div>
-    <canvas id="canvas"></canvas>
-</div>
-
-<div id="media-box">
-    <div style="text-align:right; padding:5px;"><span onclick="this.parentElement.parentElement.style.display='none'" style="cursor:pointer; color:red; font-weight:bold; font-size:20px; padding:5px;">×</span></div>
-    <img id="mImg" style="width:100%; border-radius:8px; padding:5px;">
+<div id="video-grid">
+    <div class="v-box"><video id="localVideo" autoplay muted playsinline></video></div>
 </div>
 
 <div class="controls">
     <button class="btn btn-call" onclick="startCall()">📞</button>
-    <button class="btn btn-chat" onclick="toggleChat()">💬</button>
-    <button class="btn btn-board" onclick="toggleBoard()">✏️</button>
-    <input type="file" id="fInput" style="display:none" onchange="shareF(this)">
-    <button class="btn btn-clip" onclick="document.getElementById('fInput').click()">📎</button>
     <button class="btn btn-end" onclick="window.location.reload()">🛑</button>
 </div>
 
@@ -70,77 +43,55 @@
 <script>
     const socket = io();
     const myId = Math.random().toString(36).substring(7);
-    let drawing = false;
+    let myStream;
+    const peers = {};
 
-    // 1. Feature: Slide Chat Toggle
-    function toggleChat() { document.getElementById('chat-panel').classList.toggle('active'); }
-
-    // 2. Feature: 6 Person Grid Call
     async function startCall() {
-        const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        document.getElementById('localVideo').srcObject = s;
-        socket.emit('join', {id: myId, name: 'Naresh'});
+        // Microphone aur Camera dono on karega
+        myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = myStream;
+        socket.emit('join', { id: myId });
     }
 
-    socket.on('user-joined', (d) => {
-        const v = document.createElement('video');
-        v.autoplay = true; v.playsinline = true; v.id = d.id;
-        document.getElementById('video-grid').appendChild(v);
+    socket.on('user-joined', async (data) => {
+        const pc = createPeerConnection(data.id);
+        myStream.getTracks().forEach(track => pc.addTrack(track, myStream));
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('signal', { to: data.id, from: myId, signal: offer });
     });
 
-    // 3. Feature: Chat Messaging
-    function sendMsg() {
-        const i = document.getElementById('chatInput');
-        if(i.value) {
-            document.getElementById('chat-msgs').innerHTML += `<p style="margin-bottom:8px;"><b>Me:</b> ${i.value}</p>`;
-            socket.emit('chat_message', {msg: i.value, user: 'Naresh'});
-            i.value = '';
+    socket.on('signal', async (data) => {
+        if (data.to !== myId) return;
+        let pc = peers[data.from] || createPeerConnection(data.from);
+        if (data.signal.type === 'offer') {
+            myStream.getTracks().forEach(track => pc.addTrack(track, myStream));
+            await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('signal', { to: data.from, from: myId, signal: answer });
+        } else if (data.signal.type === 'answer') {
+            await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
+        } else if (data.signal.candidate) {
+            await pc.addIceCandidate(new RTCIceCandidate(data.signal.candidate));
         }
-    }
-
-    socket.on('chat_message', (d) => {
-        document.getElementById('chat-msgs').innerHTML += `<p style="margin-bottom:8px;"><b>${d.user}:</b> ${d.msg}</p>`;
-        if(!document.getElementById('chat-panel').classList.contains('active')) alert("New message!");
     });
 
-    // 4. Feature: Movable Whiteboard
-    function toggleBoard() {
-        const b = document.getElementById('whiteboard-container');
-        b.style.display = (b.style.display === 'block') ? 'none' : 'block';
-        if(b.style.display === 'block') setupCanvas();
-    }
-
-    function setupCanvas() {
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-        ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = 'black';
-        
-        canvas.onmousedown = () => drawing = true;
-        canvas.onmouseup = () => { drawing = false; ctx.beginPath(); };
-        canvas.onmousemove = (e) => {
-            if(!drawing) return;
-            const rect = canvas.getBoundingClientRect();
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            ctx.stroke();
+    function createPeerConnection(pId) {
+        const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        peers[pId] = pc;
+        pc.onicecandidate = (e) => { if (e.candidate) socket.emit('signal', { to: pId, from: myId, signal: { candidate: e.candidate } }); };
+        pc.ontrack = (e) => {
+            if (!document.getElementById(pId)) {
+                const div = document.createElement('div'); div.className = 'v-box';
+                const v = document.createElement('video'); v.id = pId; v.autoplay = true; v.playsinline = true;
+                v.srcObject = e.streams[0]; // Ye line awaaz aur video dono legi
+                div.appendChild(v);
+                document.getElementById('video-grid').appendChild(div);
+            }
         };
+        return pc;
     }
-
-    // 5. Feature: Media Sharing (📎 Clip)
-    function shareF(input) {
-        const r = new FileReader();
-        r.onload = (e) => {
-            document.getElementById('mImg').src = e.target.result;
-            document.getElementById('media-box').style.display = 'block';
-            socket.emit('media_share', {file: e.target.result});
-        };
-        r.readAsDataURL(input.files[0]);
-    }
-
-    socket.on('receive_media', (d) => {
-        document.getElementById('mImg').src = d.file;
-        document.getElementById('media-box').style.display = 'block';
-    });
 </script>
 </body>
 </html>
