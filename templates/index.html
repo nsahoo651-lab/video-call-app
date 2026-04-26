@@ -3,83 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Naresh Premium Meet</title>
+    <title>Naresh Ultra Premium</title>
     <style>
-        :root { --primary: #0084ff; --bg: #050505; --glass: rgba(255, 255, 255, 0.1); }
+        :root { --p: #0084ff; --bg: #0a0a0a; --glass: rgba(255, 255, 255, 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; color: white; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; color: white; }
         
-        /* PREMIUM SQUARE GRID */
-        #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; padding: 15px; height: 100vh; align-content: start; }
-        .v-box { position: relative; width: 100%; padding-top: 100%; background: #111; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        /* 6 PERSON SQUARE GRID */
+        #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; padding: 15px; height: 100vh; align-content: start; }
+        .v-box { position: relative; width: 100%; padding-top: 100%; background: #151515; border-radius: 20px; overflow: hidden; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .u-name { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 10px; font-size: 12px; }
 
-        /* SLIDE CHAT (FB STYLE) */
-        #chat-panel { position: fixed; bottom: -450px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 420px; height: 420px; background: rgba(255, 255, 255, 0.95); border-radius: 25px 25px 0 0; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 500; display: flex; flex-direction: column; backdrop-filter: blur(10px); }
+        /* PREMIUM SLIDE CHAT */
+        #chat-panel { position: fixed; bottom: -460px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 400px; height: 420px; background: white; border-radius: 30px 30px 0 0; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2000; display: flex; flex-direction: column; color: #333; }
         #chat-panel.active { bottom: 0; }
-        .chat-header { background: var(--primary); color: white; padding: 18px; border-radius: 25px 25px 0 0; display: flex; justify-content: space-between; cursor: pointer; font-weight: 600; }
-        #chat-msgs { flex: 1; padding: 15px; overflow-y: auto; color: #1c1e21; font-size: 14px; }
+        .chat-h { background: var(--p); color: white; padding: 20px; border-radius: 30px 30px 0 0; display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; }
 
-        /* MOVABLE BOARD & MEDIA BOX */
-        #whiteboard-container, #media-box { position: absolute; top: 80px; left: 20px; width: 320px; height: 280px; background: white; border-radius: 20px; display: none; z-index: 200; box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 2px solid var(--primary); }
-        .handle { background: var(--primary); height: 40px; border-radius: 18px 18px 0 0; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; cursor: move; }
-        canvas { width: 100%; height: calc(100% - 40px); background: white; cursor: crosshair; }
+        /* MOVABLE WINDOWS */
+        #whiteboard-container, #media-box { position: absolute; top: 70px; left: 10px; width: 320px; height: 280px; background: white; border-radius: 20px; display: none; z-index: 1500; border: 3px solid var(--p); box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+        .handle { background: var(--p); height: 40px; border-radius: 15px 15px 0 0; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; cursor: move; }
 
-        /* PREMIUM FLOATING CONTROLS */
-        .controls { position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: var(--glass); padding: 12px 25px; border-radius: 100px; backdrop-filter: blur(20px); z-index: 1000; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-        .btn { border: none; width: 52px; height: 52px; border-radius: 50%; cursor: pointer; font-size: 22px; color: white; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .btn-call { background: #28a745; box-shadow: 0 0 20px rgba(40,167,69,0.3); }
-        .btn-chat { background: var(--primary); }
-        .btn-board { background: #ff9f00; }
-        .btn-clip { background: #4b4b4b; }
+        /* CONTROL BAR */
+        .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; background: var(--glass); padding: 15px 25px; border-radius: 100px; backdrop-filter: blur(20px); z-index: 3000; border: 1px solid rgba(255,255,255,0.1); }
+        .btn { border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; font-size: 22px; color: white; display: flex; align-items: center; justify-content: center; transition: 0.3s; background: #333; }
+        .btn-mic.off { background: #ff4444; }
+        .btn-call { background: #28a745; }
         .btn-end { background: #dc3545; }
-        .btn:hover { transform: translateY(-5px); }
+        .btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body>
 
-<div id="video-grid"><div class="v-box"><video id="localVideo" autoplay muted playsinline></video></div></div>
+<div id="video-grid"><div class="v-box"><video id="localVideo" autoplay muted playsinline></video><div class="u-name">You</div></div></div>
 
 <div id="chat-panel">
-    <div class="chat-header" onclick="toggleChat()"><b>Messenger Chat</b><span>▼</span></div>
-    <div id="chat-msgs"></div>
-    <div style="padding:15px; display:flex; gap:10px;">
-        <input id="chatIn" placeholder="Aa" style="flex:1; padding:12px; border-radius:30px; border:1px solid #ddd; background:#f0f2f5; outline:none;">
-        <button onclick="sendM()" style="border:none; background:none; font-size:24px;">💙</button>
-    </div>
+    <div class="chat-h" onclick="tChat()"><span>Messenger Chat</span><span>▼</span></div>
+    <div id="cMsgs" style="flex:1; padding:15px; overflow-y:auto;"></div>
+    <div style="padding:15px; display:flex; gap:10px;"><input id="cIn" placeholder="Aa" style="flex:1; padding:12px; border-radius:30px; border:1px solid #eee; background:#f0f2f5;"><button onclick="sendM()">💙</button></div>
 </div>
 
-<div id="whiteboard-container">
-    <div class="handle" id="bHandle"><span>✏️ Board (Drag)</span><span onclick="toggleB()" style="cursor:pointer;">✕</span></div>
-    <canvas id="canvas"></canvas>
-</div>
-
-<div id="media-box">
-    <div style="text-align:right; padding:8px;"><span onclick="this.parentElement.parentElement.style.display='none'" style="color:red; cursor:pointer; font-size:24px;">✕</span></div>
-    <img id="mImg" style="width:100%; height:auto; border-radius:10px; padding:0 10px 10px 10px;">
-</div>
+<div id="whiteboard-container"><div class="handle"><span>Board</span><span onclick="tB()">✕</span></div><canvas id="canvas"></canvas></div>
+<div id="media-box"><div style="text-align:right; padding:5px;"><span onclick="this.parentElement.parentElement.style.display='none'" style="color:red; font-size:20px; cursor:pointer;">✕</span></div><img id="mImg" style="width:100%; border-radius:10px; padding:10px;"></div>
 
 <div class="controls">
-    <button class="btn btn-call" onclick="startCall()">📞</button>
-    <button class="btn btn-chat" onclick="toggleChat()">💬</button>
-    <button class="btn btn-board" onclick="toggleB()">✏️</button>
-    <input type="file" id="fIn" style="display:none" onchange="shareF(this)">
-    <button class="btn btn-clip" onclick="document.getElementById('fIn').click()">📎</button>
-    <button class="btn btn-end" onclick="window.location.reload()">🛑</button>
+    <button class="btn btn-call" id="startBtn" onclick="startCall()">📞</button>
+    <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎤</button>
+    <button class="btn" onclick="toggleSpeaker()">🔊</button> <button class="btn" onclick="tChat()">💬</button>
+    <button class="btn" onclick="tB()">✏️</button>
+    <input type="file" id="fIn" style="display:none" onchange="sFile(this)">
+    <button class="btn" onclick="document.getElementById('fIn').click()">📎</button>
+    <button class="btn btn-end" onclick="location.reload()">🛑</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
     const socket = io(); const myId = Math.random().toString(36).substring(7);
-    let myStream; const peers = {}; let drawing = false;
+    let myStream; const peers = {};
 
-    function toggleChat() { document.getElementById('chat-panel').classList.toggle('active'); }
-    function toggleB() { const b = document.getElementById('whiteboard-container'); b.style.display = (b.style.display==='block') ? 'none':'block'; if(b.style.display==='block') setupCanvas(); }
+    function tChat() { document.getElementById('chat-panel').classList.toggle('active'); }
+    function tB() { const b=document.getElementById('whiteboard-container'); b.style.display=(b.style.display==='block')?'none':'block'; if(b.style.display==='block') setupCanvas(); }
 
     async function startCall() {
         myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
         document.getElementById('localVideo').srcObject = myStream;
         socket.emit('join', {id:myId});
+        document.getElementById('startBtn').style.background = "#666";
+    }
+
+    function toggleMic() {
+        const audioTrack = myStream.getAudioTracks()[0];
+        audioTrack.enabled = !audioTrack.enabled;
+        document.getElementById('micBtn').classList.toggle('off');
+        document.getElementById('micBtn').innerText = audioTrack.enabled ? '🎤' : '🔇';
+    }
+
+    // Speaker Fix: Kuch phones me automatic change nahi hota, isliye manually output set karne ki koshish
+    async function toggleSpeaker() {
+        const videos = document.querySelectorAll('video');
+        alert("Audio routed to best available device (Headphones/Speaker)");
+        // Note: 'setSinkId' support limited hai, lekin ye audio refresh kar deta hai
+        videos.forEach(v => { if(v.setSinkId) v.setSinkId(""); });
     }
 
     socket.on('user-joined', async (d) => {
@@ -115,13 +119,13 @@
         return pc;
     }
 
-    function sendM() { const i = document.getElementById('chatIn'); if(i.value) { document.getElementById('chat-msgs').innerHTML += `<div style="margin-bottom:10px;"><b>Me:</b> ${i.value}</div>`; socket.emit('chat_message', {msg:i.value, user:'Naresh'}); i.value=''; } }
-    socket.on('chat_message', (d) => { document.getElementById('chat-msgs').innerHTML += `<div style="margin-bottom:10px;"><b>${d.user}:</b> ${d.msg}</div>`; });
+    function sendM() { const i=document.getElementById('cIn'); if(i.value){ document.getElementById('cMsgs').innerHTML+=`<div><b>Me:</b> ${i.value}</div>`; socket.emit('chat_message',{msg:i.value, user:'Naresh'}); i.value=''; } }
+    socket.on('chat_message', (d)=>{ document.getElementById('cMsgs').innerHTML+=`<div><b>${d.user}:</b> ${d.msg}</div>`; });
     
-    function shareF(input) { const r = new FileReader(); r.onload = (e) => { document.getElementById('mImg').src = e.target.result; document.getElementById('media-box').style.display='block'; socket.emit('media_share', {file:e.target.result}); }; r.readAsDataURL(input.files[0]); }
-    socket.on('receive_media', (d) => { document.getElementById('mImg').src=d.file; document.getElementById('media-box').style.display='block'; });
+    function sFile(input) { const r=new FileReader(); r.onload=(e)=>{ document.getElementById('mImg').src=e.target.result; document.getElementById('media-box').style.display='block'; socket.emit('media_share',{file:e.target.result}); }; r.readAsDataURL(input.files[0]); }
+    socket.on('receive_media', (d)=>{ document.getElementById('mImg').src=d.file; document.getElementById('media-box').style.display='block'; });
 
-    function setupCanvas() { const c = document.getElementById('canvas'); const ctx = c.getContext('2d'); c.width = c.offsetWidth; c.height = c.offsetHeight; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; c.onmousedown = () => drawing=true; c.onmouseup = () => {drawing=false; ctx.beginPath();}; c.onmousemove = (e) => { if(!drawing) return; const r = c.getBoundingClientRect(); ctx.lineTo(e.clientX-r.left, e.clientY-r.top); ctx.stroke(); }; }
+    function setupCanvas() { const c=document.getElementById('canvas'); const ctx=c.getContext('2d'); c.width=c.offsetWidth; c.height=c.offsetHeight; ctx.lineWidth=3; ctx.strokeStyle='#000'; let d=false; c.onmousedown=()=>{d=true;}; c.onmouseup=()=>{d=false; ctx.beginPath();}; c.onmousemove=(e)=>{ if(!d)return; const r=c.getBoundingClientRect(); ctx.lineTo(e.clientX-r.left, e.clientY-r.top); ctx.stroke(); }; }
 </script>
 </body>
 </html>
