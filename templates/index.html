@@ -6,36 +6,34 @@
     <title>Naresh Pro Meet</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; font-family: sans-serif; overflow: hidden; height: 100vh; }
+        body { background: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
         
-        /* Video - Poori Screen Par */
-        #video-grid { height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background: #111; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(30%, 1fr)); gap: 5px; height: 100vh; width: 100vw; }
+        video { width: 100%; height: 100%; object-fit: cover; background: #111; border-radius: 10px; }
 
-        /* Movable Whiteboard Box */
-        #whiteboard-container { 
-            position: absolute; top: 50px; left: 20px;
-            width: 320px; height: 280px; background: white; 
-            border-radius: 12px; display: none; z-index: 200;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); touch-action: none;
+        /* Slide-up Chat Panel */
+        #chat-panel {
+            position: fixed; bottom: -420px; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 400px; height: 400px; background: white;
+            border-radius: 20px 20px 0 0; transition: 0.4s ease; z-index: 500;
+            display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
         }
-        .handle { 
-            background: #3b82f6; height: 35px; border-radius: 12px 12px 0 0; 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 15px; color: white; cursor: move; font-weight: bold;
-        }
-        canvas { width: 100%; height: calc(100% - 35px); background: white; border-radius: 0 0 12px 12px; touch-action: none; }
+        #chat-panel.active { bottom: 0; }
+        .chat-header { background: #0084ff; color: white; padding: 15px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; cursor: pointer; }
+        #chat-msgs { flex: 1; padding: 10px; overflow-y: auto; color: #333; }
 
-        /* Floating Controls */
-        .controls { 
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); 
-            display: flex; gap: 20px; background: rgba(255,255,255,0.15); 
-            padding: 15px 30px; border-radius: 50px; backdrop-filter: blur(15px); 
-            border: 1px solid rgba(255,255,255,0.2); z-index: 100;
+        /* Media Share Box (Movable) */
+        #media-box { 
+            position: absolute; top: 60px; right: 20px; width: 220px; 
+            background: #fff; border-radius: 10px; display: none; z-index: 300; padding: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .btn { border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; font-size: 28px; color: white; display: flex; align-items: center; justify-content: center; }
-        .btn-call { background: #22c55e; box-shadow: 0 0 15px rgba(34,197,94,0.4); }
-        .btn-board { background: #f59e0b; box-shadow: 0 0 15px rgba(245,158,11,0.4); }
+
+        .controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 50px; backdrop-filter: blur(10px); z-index: 100; }
+        .btn { border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 20px; color: white; display: flex; align-items: center; justify-content: center; }
+        .btn-call { background: #22c55e; }
+        .btn-chat { background: #0084ff; }
+        .btn-clip { background: #6b7280; }
         .btn-end { background: #ef4444; }
     </style>
 </head>
@@ -43,60 +41,65 @@
 
 <div id="video-grid"><video id="localVideo" autoplay muted playsinline></video></div>
 
-<div id="whiteboard-container" id="draggable">
-    <div class="handle" id="boardHandle">
-        <span>BOARD ⠿</span>
-        <span onclick="toggleBoard()" style="cursor:pointer; font-size: 20px;">×</span>
+<div id="chat-panel" id="chatPanel">
+    <div class="chat-header" onclick="toggleChat()"><b>Group Chat</b><span>▼</span></div>
+    <div id="chat-msgs"></div>
+    <div style="padding:10px; border-top:1px solid #eee; display:flex;">
+        <input type="text" id="chatInput" placeholder="Type here..." style="flex:1; padding:8px; border-radius:20px; border:1px solid #ddd; outline:none;">
+        <button onclick="sendMsg()" style="border:none; background:none; font-size:20px; margin-left:5px;">🚀</button>
     </div>
-    <canvas id="canvas"></canvas>
+</div>
+
+<div id="media-box">
+    <div style="text-align:right;"><span onclick="this.parentElement.parentElement.style.display='none'" style="cursor:pointer; color:red;">×</span></div>
+    <img id="mImg" style="width:100%; border-radius:5px;">
 </div>
 
 <div class="controls">
     <button class="btn btn-call" onclick="startCall()">📞</button>
-    <button class="btn btn-board" onclick="toggleBoard()">✏️</button>
+    <button class="btn btn-chat" onclick="toggleChat()">💬</button>
+    <input type="file" id="fInput" style="display:none" onchange="shareF(this)">
+    <button class="btn btn-clip" onclick="document.getElementById('fInput').click()">📎</button>
     <button class="btn btn-end" onclick="window.location.reload()">🛑</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-    let myStream;
-    const container = document.getElementById('whiteboard-container');
-    const handle = document.getElementById('boardHandle');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
+    const socket = io();
+    function toggleChat() { document.getElementById('chat-panel').classList.toggle('active'); }
 
     async function startCall() {
-        myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideo').srcObject = myStream;
+        const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+        document.getElementById('localVideo').srcObject = s;
+        socket.emit('join', {name: 'Naresh'});
     }
 
-    function toggleBoard() {
-        container.style.display = (container.style.display === 'block') ? 'none' : 'block';
-        if(container.style.display === 'block') {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = 'black';
+    function sendMsg() {
+        const i = document.getElementById('chatInput');
+        if(i.value) {
+            document.getElementById('chat-msgs').innerHTML += `<p><b>Me:</b> ${i.value}</p>`;
+            socket.emit('chat_message', {msg: i.value, user: 'Naresh'});
+            i.value = '';
         }
     }
 
-    // Drag Logic for Mobile & PC
-    let offset = [0,0];
-    handle.addEventListener('touchstart', (e) => {
-        offset = [container.offsetLeft - e.touches[0].clientX, container.offsetTop - e.touches[0].clientY];
-    });
-    handle.addEventListener('touchmove', (e) => {
-        container.style.left = (e.touches[0].clientX + offset[0]) + 'px';
-        container.style.top = (e.touches[0].clientY + offset[1]) + 'px';
+    socket.on('chat_message', (d) => {
+        document.getElementById('chat-msgs').innerHTML += `<p><b>${d.user}:</b> ${d.msg}</p>`;
     });
 
-    // Drawing Logic
-    canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); e.preventDefault(); });
-    canvas.addEventListener('touchend', () => { drawing = false; });
-    canvas.addEventListener('touchmove', (e) => {
-        if(!drawing) return;
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
-        ctx.stroke();
+    function shareF(input) {
+        const r = new FileReader();
+        r.onload = (e) => {
+            document.getElementById('mImg').src = e.target.result;
+            document.getElementById('media-box').style.display = 'block';
+            socket.emit('media_share', {file: e.target.result});
+        };
+        r.readAsDataURL(input.files[0]);
+    }
+
+    socket.on('receive_media', (d) => {
+        document.getElementById('mImg').src = d.file;
+        document.getElementById('media-box').style.display = 'block';
     });
 </script>
 </body>
