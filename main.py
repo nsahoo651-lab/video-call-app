@@ -3,8 +3,8 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'naresh_pro_audio_video'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+app.config['SECRET_KEY'] = 'naresh_premium_2026'
+socketio = SocketIO(app, cors_allowed_origins="*", max_decode_packets=5000000, async_mode='gevent')
 
 @app.route('/')
 def index():
@@ -18,8 +18,15 @@ def on_join(data):
 
 @socketio.on('signal')
 def handle_signal(data):
-    # Ye line video aur audio ka data ek phone se dusre phone ko bhejti hai
     emit('signal', data, to='naresh_room', include_self=False)
+
+@socketio.on('chat_message')
+def handle_message(data):
+    emit('chat_message', data, to='naresh_room', include_self=False)
+
+@socketio.on('media_share')
+def handle_media(data):
+    emit('receive_media', data, to='naresh_room', include_self=False)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
