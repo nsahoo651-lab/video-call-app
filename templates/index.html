@@ -1,32 +1,71 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-<script>
-    const socket = io();
-    let localStream;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naresh Pro Meet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; font-family: 'Segoe UI', sans-serif; color: white; height: 100vh; overflow: hidden; }
+        
+        /* Video Container */
+        #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); height: 100vh; width: 100vw; gap: 5px; }
+        video { width: 100%; height: 100%; object-fit: cover; background: #111; }
 
-    // 1. Camera Shuru karne ka function
-    async function startCall() {
-        try {
-            console.log("Starting call...");
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = localStream;
-            alert("Camera chalu ho gaya hai!");
-        } catch (e) {
-            console.error(e);
-            alert("Permission denied! Setting mein jaakar Camera allow karein.");
+        /* Modern Controls */
+        .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; background: rgba(255,255,255,0.1); padding: 15px 25px; border-radius: 50px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); z-index: 100; }
+        .btn { border: none; width: 55px; height: 55px; border-radius: 50%; cursor: pointer; font-size: 24px; color: white; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .btn-call { background: #22c55e; }
+        .btn-chat { background: #3b82f6; }
+        .btn-end { background: #ef4444; }
+        .btn:active { transform: scale(0.9); }
+
+        .header-tag { position: absolute; top: 20px; left: 20px; z-index: 10; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; border: 1px solid #444; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header-tag">Naresh Pro Meet ● <span style="color: #22c55e;">Live</span></div>
+    
+    <div id="video-grid">
+        <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-call" onclick="startCall()" title="Start Call">📞</button>
+        <button class="btn btn-chat" onclick="openChat()" title="Chat">💬</button>
+        <button class="btn btn-end" onclick="endCall()" title="End Call">🛑</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myStream;
+
+        // 1. Start Call Function
+        async function startCall() {
+            try {
+                myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const videoElement = document.getElementById('localVideo');
+                videoElement.srcObject = myStream;
+                console.log("Camera started successfully");
+            } catch (err) {
+                alert("Please allow Camera and Mic permissions!");
+                console.error(err);
+            }
         }
-    }
 
-    // 2. Chat toggle karne ka function
-    function toggleChat() {
-        alert("Chat Feature jald hi activate hoga! Abhi hum sirf video check kar rahe hain.");
-    }
-
-    // 3. Call khatam karne ka function
-    function endCall() {
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-            document.getElementById('localVideo').srcObject = null;
+        // 2. Chat Placeholder
+        function openChat() {
+            alert("Chat window coming soon! Video is active.");
         }
-        window.location.reload(); // Page refresh karke sab reset karein
-    }
-</script>
+
+        // 3. End Call Function
+        function endCall() {
+            if (myStream) {
+                myStream.getTracks().forEach(track => track.stop());
+            }
+            window.location.reload(); 
+        }
+    </script>
+</body>
+</html>
