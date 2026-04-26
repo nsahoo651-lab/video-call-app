@@ -1,87 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Naresh Pro Meet</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #000; color: white; height: 100vh; overflow: hidden; }
-        
-        /* Video Container - Full Screen Grid */
-        #video-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)); 
-            gap: 10px; 
-            height: 100vh; 
-            width: 100vw; 
-            padding: 10px;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; /* Video poori screen bharega */
-            border-radius: 15px; 
-            background: #111;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Floating Header */
-        header { 
-            position: absolute; top: 20px; left: 20px; z-index: 10;
-            background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px;
-            backdrop-filter: blur(5px); font-size: 14px;
-        }
-
-        /* Bottom Control Bar - WhatsApp Style */
-        .controls { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
-            display: flex; gap: 20px; background: rgba(255,255,255,0.1); 
-            padding: 15px 30px; border-radius: 40px; backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255,255,255,0.2); z-index: 100;
-        }
-
-        .btn { 
-            border: none; width: 55px; height: 55px; border-radius: 50%; 
-            cursor: pointer; font-size: 24px; transition: 0.3s; 
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-call { background: #22c55e; color: white; box-shadow: 0 0 15px rgba(34,197,94,0.5); }
-        .btn-end { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239,68,68,0.5); }
-        .btn-sec { background: rgba(255,255,255,0.2); color: white; }
-        .btn:hover { transform: scale(1.1); }
-
-        /* Names on Video */
-        .user-label { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 5px; font-size: 12px; }
-    </style>
-</head>
-<body>
-
-<header>Naresh Pro Meet ● <span style="color: #22c55e;">Live</span></header>
-
-<div id="video-grid">
-    <div style="position: relative; height: 100%;">
-        <video id="localVideo" autoplay muted playsinline></video>
-        <div class="user-label">Aap (Naresh)</div>
-    </div>
-    </div>
-
-<div class="controls">
-    <button class="btn btn-call" onclick="startCall()">📞</button>
-    <button class="btn btn-sec" onclick="toggleChat()">💬</button>
-    <button class="btn btn-sec" onclick="toggleBoard()">✏️</button>
-    <button class="btn btn-end" onclick="endCall()">🛑</button>
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-    // Logic wahi rahega, bas design badla hai
+    const socket = io();
+    let localStream;
+
+    // 1. Camera Shuru karne ka function
     async function startCall() {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideo').srcObject = stream;
+        try {
+            console.log("Starting call...");
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+            alert("Camera chalu ho gaya hai!");
+        } catch (e) {
+            console.error(e);
+            alert("Permission denied! Setting mein jaakar Camera allow karein.");
+        }
+    }
+
+    // 2. Chat toggle karne ka function
+    function toggleChat() {
+        alert("Chat Feature jald hi activate hoga! Abhi hum sirf video check kar rahe hain.");
+    }
+
+    // 3. Call khatam karne ka function
+    function endCall() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            document.getElementById('localVideo').srcObject = null;
+        }
+        window.location.reload(); // Page refresh karke sab reset karein
     }
 </script>
-</body>
-</html>
