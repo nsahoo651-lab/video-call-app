@@ -3,12 +3,11 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'naresh_premium_2026'
+app.config['SECRET_KEY'] = 'naresh_pro_ultra'
 socketio = SocketIO(app, cors_allowed_origins="*", max_decode_packets=5000000, async_mode='gevent')
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def index(): return render_template('index.html')
 
 @socketio.on('join')
 def on_join(data):
@@ -29,5 +28,4 @@ def handle_media(data):
     emit('receive_media', data, to='naresh_room', include_self=False)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
