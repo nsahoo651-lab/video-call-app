@@ -1,106 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Naresh Pro Meet</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
-        
-        #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(30%, 1fr)); gap: 5px; height: 100vh; width: 100vw; }
-        video { width: 100%; height: 100%; object-fit: cover; background: #111; border-radius: 10px; }
-
-        /* Slide-up Chat Panel */
-        #chat-panel {
-            position: fixed; bottom: -420px; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 400px; height: 400px; background: white;
-            border-radius: 20px 20px 0 0; transition: 0.4s ease; z-index: 500;
-            display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-        }
-        #chat-panel.active { bottom: 0; }
-        .chat-header { background: #0084ff; color: white; padding: 15px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; cursor: pointer; }
-        #chat-msgs { flex: 1; padding: 10px; overflow-y: auto; color: #333; }
-
-        /* Media Share Box (Movable) */
-        #media-box { 
-            position: absolute; top: 60px; right: 20px; width: 220px; 
-            background: #fff; border-radius: 10px; display: none; z-index: 300; padding: 5px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 50px; backdrop-filter: blur(10px); z-index: 100; }
-        .btn { border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 20px; color: white; display: flex; align-items: center; justify-content: center; }
-        .btn-call { background: #22c55e; }
-        .btn-chat { background: #0084ff; }
-        .btn-clip { background: #6b7280; }
-        .btn-end { background: #ef4444; }
-    </style>
-</head>
-<body>
-
-<div id="video-grid"><video id="localVideo" autoplay muted playsinline></video></div>
-
-<div id="chat-panel" id="chatPanel">
-    <div class="chat-header" onclick="toggleChat()"><b>Group Chat</b><span>▼</span></div>
-    <div id="chat-msgs"></div>
-    <div style="padding:10px; border-top:1px solid #eee; display:flex;">
-        <input type="text" id="chatInput" placeholder="Type here..." style="flex:1; padding:8px; border-radius:20px; border:1px solid #ddd; outline:none;">
-        <button onclick="sendMsg()" style="border:none; background:none; font-size:20px; margin-left:5px;">🚀</button>
-    </div>
-</div>
-
-<div id="media-box">
-    <div style="text-align:right;"><span onclick="this.parentElement.parentElement.style.display='none'" style="cursor:pointer; color:red;">×</span></div>
-    <img id="mImg" style="width:100%; border-radius:5px;">
-</div>
-
-<div class="controls">
-    <button class="btn btn-call" onclick="startCall()">📞</button>
-    <button class="btn btn-chat" onclick="toggleChat()">💬</button>
-    <input type="file" id="fInput" style="display:none" onchange="shareF(this)">
-    <button class="btn btn-clip" onclick="document.getElementById('fInput').click()">📎</button>
-    <button class="btn btn-end" onclick="window.location.reload()">🛑</button>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
     const socket = io();
-    function toggleChat() { document.getElementById('chat-panel').classList.toggle('active'); }
+    const myId = Math.random().toString(36).substring(7); // Har user ki unique ID
+    let myStream;
+    const videoGrid = document.getElementById('video-grid');
 
+    // 1. Call Start Function (Audio + Video dono ke liye)
     async function startCall() {
-        const s = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        document.getElementById('localVideo').srcObject = s;
-        socket.emit('join', {name: 'Naresh'});
-    }
-
-    function sendMsg() {
-        const i = document.getElementById('chatInput');
-        if(i.value) {
-            document.getElementById('chat-msgs').innerHTML += `<p><b>Me:</b> ${i.value}</p>`;
-            socket.emit('chat_message', {msg: i.value, user: 'Naresh'});
-            i.value = '';
+        try {
+            // Audio aur Video dono ki permission lega
+            myStream = await navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: { 
+                    echoCancellation: true, 
+                    noiseSuppression: true 
+                } 
+            });
+            
+            document.getElementById('localVideo').srcObject = myStream;
+            
+            // Server ko batana ki naya banda (Naresh) jud gaya hai
+            socket.emit('join', { id: myId, name: 'Naresh' });
+            console.log("My call started with Audio/Video");
+            
+        } catch (err) {
+            console.error(err);
+            alert("Mic aur Camera on karne ke liye 'Allow' dabayein!");
         }
     }
 
-    socket.on('chat_message', (d) => {
-        document.getElementById('chat-msgs').innerHTML += `<p><b>${d.user}:</b> ${d.msg}</p>`;
+    // 2. Jab koi doosra banda jude (Up to 6 people)
+    socket.on('user-joined', (data) => {
+        console.log("Naya dost juda: " + data.name);
+        
+        // Naya video box (dabba) banana
+        const remoteVideo = document.createElement('video');
+        remoteVideo.autoplay = true;
+        remoteVideo.playsinline = true;
+        remoteVideo.id = data.id;
+        
+        // Dusre bande ki awaaz sunne ke liye muted = false
+        remoteVideo.muted = false; 
+        
+        videoGrid.appendChild(remoteVideo);
+        
+        // Note: Real 6-person audio/video ke liye WebRTC signals exchange hote hain
+        // Abhi ke liye ye frame create kar raha hai
     });
 
-    function shareF(input) {
-        const r = new FileReader();
-        r.onload = (e) => {
-            document.getElementById('mImg').src = e.target.result;
-            document.getElementById('media-box').style.display = 'block';
-            socket.emit('media_share', {file: e.target.result});
-        };
-        r.readAsDataURL(input.files[0]);
+    // 3. Chat Slide Toggle Function
+    function toggleChat() {
+        const chatPanel = document.getElementById('chat-panel');
+        chatPanel.classList.toggle('active');
     }
 
-    socket.on('receive_media', (d) => {
-        document.getElementById('mImg').src = d.file;
-        document.getElementById('media-box').style.display = 'block';
-    });
+    // 4. Whiteboard Toggle
+    function toggleBoard() {
+        const board = document.getElementById('whiteboard-container');
+        board.style.display = (board.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // 5. Call Khatam karna
+    function endCall() {
+        if (myStream) {
+            myStream.getTracks().forEach(track => track.stop());
+        }
+        window.location.reload();
+    }
 </script>
-</body>
-</html>
