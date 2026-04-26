@@ -3,7 +3,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'naresh_pro_key_99'
+app.config['SECRET_KEY'] = 'naresh_pro_meet_2026'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
@@ -12,13 +12,7 @@ def index():
 
 @socketio.on('signal')
 def handle_signal(data):
-    # Signaling for video call
     emit('signal', data, broadcast=True, include_self=False)
-
-@socketio.on('chat_message')
-def handle_message(data):
-    # Sending chat messages to everyone
-    emit('chat_message', data, broadcast=True, include_self=False)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
